@@ -52,6 +52,7 @@ export default async function DashboardPage() {
     { count: overdueFollowUps },
     { data: allMedications },
     { count: pendingLabResults },
+    { count: overdueInvoices },
   ] = await Promise.all([
     supabase
       .from("appointments")
@@ -102,6 +103,11 @@ export default async function DashboardPage() {
       .from("investigations")
       .select("id", { count: "exact", head: true })
       .in("status", ["ordered", "in_progress"]),
+    supabase
+      .from("invoices")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["issued", "partially_paid"])
+      .lt("due_date", todayDateStr),
   ]);
 
   // --- Doctor lookup for queue rows (via today's appointments) ---
@@ -241,6 +247,13 @@ export default async function DashboardPage() {
       icon: FlaskConical,
       tone: "warning" as const,
       href: "/queue",
+    },
+    {
+      label: "overdue invoices",
+      count: overdueInvoices ?? 0,
+      icon: Receipt,
+      tone: "destructive" as const,
+      href: "/billing",
     },
   ];
 

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/get-profile";
 import { StatusBadge } from "@/components/status-badge";
 import { RecordPaymentDialog } from "@/components/billing/record-payment-dialog";
+import { VoidInvoiceButton } from "@/components/billing/void-invoice-button";
 import { Card } from "@/components/ui/card";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import { invoiceStatus } from "@/lib/status";
@@ -36,6 +37,7 @@ export default async function InvoiceDetailPage({
   const balance = Math.max(0, Number(invoice.total) - totalPaid);
   const canRecordPayment =
     (user?.role === "admin" || user?.role === "receptionist") && balance > 0 && invoice.status !== "void";
+  const canVoid = user?.role === "admin" && invoice.status !== "void" && totalPaid === 0;
 
   return (
     <div className="space-y-6">
@@ -57,6 +59,7 @@ export default async function InvoiceDetailPage({
           </div>
           <div className="flex items-center gap-3">
             <StatusBadge label={meta.label} tone={meta.tone} />
+            {canVoid && <VoidInvoiceButton invoiceId={invoice.id} />}
             {canRecordPayment && <RecordPaymentDialog invoiceId={invoice.id} balance={balance} />}
           </div>
         </div>

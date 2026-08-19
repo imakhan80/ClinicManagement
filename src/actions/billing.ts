@@ -59,6 +59,27 @@ export async function recordPayment(invoiceId: string, input: unknown): Promise<
   if (!user) return { error: "Not authenticated" };
 
   const supabase = await createClient();
+
+  const { data: invoice, error: invoiceError } = await supabase
+    .from("invoices")
+    .select("total, status")
+    .eq("id", invoiceId)
+    .single();
+  if (invoiceError || !invoice) return { error: invoiceError?.message ?? "Invoice not found" };
+  if (invoice.status === "void") return { error: "This invoice has been voided." };
+
+  const { data: existingPayments } = await supabase
+    .from("payments")
+    .select("amount")
+    .eq("invoice_id", invoiceId);
+
+  const alreadyPaid = (existingPayments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
+  const remaining = Number(invoice.total) - alreadyPaid;
+
+  if (parsed.data.amount > remaining + 0.001) {
+    return { error: `Amount exceeds the remaining balance of $${remaining.toFixed(2)}.` };
+  }
+
   const { error: payError } = await supabase.from("payments").insert({
     invoice_id: invoiceId,
     amount: parsed.data.amount,
@@ -67,25 +88,34 @@ export async function recordPayment(invoiceId: string, input: unknown): Promise<
   });
   if (payError) return { error: payError.message };
 
-  const { data: invoice } = await supabase
-    .from("invoices")
-    .select("total")
-    .eq("id", invoiceId)
-    .single();
-
-  const { data: payments } = await supabase
-    .from("payments")
-    .select("amount")
-    .eq("invoice_id", invoiceId);
-
-  const totalPaid = (payments ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
-  const status = invoice && totalPaid >= Number(invoice.total) ? "paid" : "partially_paid";
+  const totalPaid = alreadyPaid + parsed.data.amount;
+  const status = totalPaid >= Number(invoice.total) ? "paid" : "partially_paid";
 
   const { error: statusError } = await supabase
     .from("invoices")
     .update({ status })
     .eq("id", invoiceId);
   if (statusError) return { error: statusError.message };
+
+  revalidatePath("/billing");
+  revalidatePath(`/billing/${invoiceId}`);
+  return { id: invoiceId };
+}
+
+export async function voidInvoice(invoiceId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const { data: payments } = await supabase
+    .from("payments")
+    .select("id")
+    .eq("invoice_id", invoiceId)
+    .limit(1);
+  if (payments && payments.length > 0) {
+    return { error: "Cannot void an invoice that already has payments recorded." };
+  }
+
+  const { error } = await supabase.from("invoices").update({ status: "void" }).eq("id", invoiceId);
+  if (error) return { error: error.message };
 
   revalidatePath("/billing");
   revalidatePath(`/billing/${invoiceId}`);
