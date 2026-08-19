@@ -41,3 +41,15 @@ export async function scheduleFollowUp(input: {
   revalidatePath("/appointments");
   return {};
 }
+
+export async function cancelFollowUp(followUpId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("follow_ups")
+    .update({ status: "cancelled" })
+    .eq("id", followUpId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/follow-ups");
+  return {};
+}
