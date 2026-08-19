@@ -8,6 +8,7 @@ import {
   CalendarClock,
   FlaskConical,
   Stethoscope,
+  ClipboardList,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentUser } from "@/lib/auth/get-profile";
@@ -39,6 +40,7 @@ export async function DoctorDashboard({ user }: { user: CurrentUser }) {
     { count: overdueFollowUps },
     { count: dueTodayFollowUps },
     { count: pendingInvestigations },
+    { count: pendingProcedures },
   ] = await Promise.all([
     supabase
       .from("appointments")
@@ -73,6 +75,11 @@ export async function DoctorDashboard({ user }: { user: CurrentUser }) {
       .select("id", { count: "exact", head: true })
       .eq("ordered_by", user.id)
       .in("status", ["ordered", "in_progress"]),
+    supabase
+      .from("procedure_orders")
+      .select("id", { count: "exact", head: true })
+      .eq("ordered_by", user.id)
+      .eq("status", "ordered"),
   ]);
 
   const appointments = myAppointmentsToday ?? [];
@@ -126,12 +133,19 @@ export async function DoctorDashboard({ user }: { user: CurrentUser }) {
       tone: "warning" as const,
       href: "/laboratory",
     },
+    {
+      label: "of my procedures not yet performed",
+      count: pendingProcedures ?? 0,
+      icon: ClipboardList,
+      tone: "warning" as const,
+      href: "/procedures",
+    },
   ];
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title={`Good day, ${user.fullName}`}
+        title={`Good day, Dr. ${user.fullName.split(" ")[0] ?? ""}`}
         description="Here's your day — who's waiting, and what needs follow-up."
       />
 

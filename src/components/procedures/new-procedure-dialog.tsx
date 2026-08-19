@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -31,18 +31,24 @@ interface FormValues {
   category: string;
   default_price: number;
   default_duration_minutes: number;
-  consumables: { inventory_item_id: string; quantity_per_procedure: number }[];
+}
+
+interface ConsumableRow {
+  key: number;
+  inventory_item_id: string;
+  quantity_per_procedure: number;
 }
 
 export function NewProcedureDialog() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const [items, setItems] = useState<{ id: string; label: string }[]>([]);
+  const [consumables, setConsumables] = useState<ConsumableRow[]>([]);
+  const [nextKey, setNextKey] = useState(0);
 
-  const { register, control, handleSubmit, reset, watch, setValue, formState: { isSubmitting } } = useForm<FormValues>({
-    defaultValues: { name: "", category: "", default_price: 0, default_duration_minutes: 30, consumables: [] },
+  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<FormValues>({
+    defaultValues: { name: "", category: "", default_price: 0, default_duration_minutes: 30 },
   });
-  const { fields, append, remove } = useFieldArray({ control, name: "consumables" });
 
   useEffect(() => {
     if (!open || items.length > 0) return;
@@ -53,14 +59,35 @@ export function NewProcedureDialog() {
       .then(({ data }) => setItems((data ?? []).map((i) => ({ id: i.id, label: i.name }))));
   }, [open, items.length]);
 
+  function addConsumableRow() {
+    setConsumables((prev) => [...prev, { key: nextKey, inventory_item_id: "", quantity_per_procedure: 1 }]);
+    setNextKey((k) => k + 1);
+  }
+
+  function removeConsumableRow(key: number) {
+    setConsumables((prev) => prev.filter((c) => c.key !== key));
+  }
+
+  function updateConsumableRow(key: number, patch: Partial<ConsumableRow>) {
+    setConsumables((prev) => prev.map((c) => (c.key === key ? { ...c, ...patch } : c)));
+  }
+
   async function onSubmit(values: FormValues) {
-    const result = await createProcedureCatalogItem(values);
+    const validConsumables = consumables.filter((c) => c.inventory_item_id);
+    const result = await createProcedureCatalogItem({
+      ...values,
+      consumables: validConsumables.map((c) => ({
+        inventory_item_id: c.inventory_item_id,
+        quantity_per_procedure: c.quantity_per_procedure,
+      })),
+    });
     if (result?.error) {
       toast.error(result.error);
       return;
     }
     toast.success("Procedure type added");
     reset();
+    setConsumables([]);
     setOpen(false);
     router.refresh();
   }
@@ -102,12 +129,12 @@ export function NewProcedureDialog() {
 
           <div className="space-y-2">
             <Label>Consumables (optional)</Label>
-            {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-6 gap-2">
+            {consumables.map((row) => (
+              <div key={row.key} className="grid grid-cols-6 gap-2">
                 <div className="col-span-4">
                   <Select
-                    value={watch(`consumables.${index}.inventory_item_id`)}
-                    onValueChange={(v) => setValue(`consumables.${index}.inventory_item_id`, v ?? "")}
+                    value={row.inventory_item_id}
+                    onValueChange={(v) => updateConsumableRow(row.key, { inventory_item_id: v ?? "" })}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a supply" />
@@ -126,19 +153,17 @@ export function NewProcedureDialog() {
                   min={1}
                   placeholder="Qty"
                   className="col-span-1"
-                  {...register(`consumables.${index}.quantity_per_procedure`, { valueAsNumber: true })}
+                  value={row.quantity_per_procedure}
+                  onChange={(e) =>
+                    updateConsumableRow(row.key, { quantity_per_procedure: Math.max(1, Number(e.target.value) || 1) })
+                  }
                 />
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                <Button type="button" variant="ghost" size="icon" onClick={() => removeConsumableRow(row.key)}>
                   <Trash2 className="size-3.5" />
                 </Button>
               </div>
             ))}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => append({ inventory_item_id: "", quantity_per_procedure: 1 })}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={addConsumableRow}>
               <Plus className="size-3.5" />
               Add consumable
             </Button>

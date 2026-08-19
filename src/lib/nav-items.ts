@@ -43,7 +43,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/reports", label: "Reports", icon: BarChart3, roles: ["admin"] },
   { href: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
   { href: "/communications", label: "Communications", icon: MessageSquare, roles: ["admin", "receptionist"] },
-  { href: "#", label: "Settings", icon: Settings, soon: true },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export const MOBILE_PRIMARY = ["/dashboard", "/queue", "/appointments", "/patients"];

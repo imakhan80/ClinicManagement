@@ -46,7 +46,7 @@ const supabase = createClient(url, serviceKey, {
 // Keep in sync with DEMO_ACCOUNTS in src/actions/auth.ts.
 const DEMO_USERS = [
   { email: "admin@clinicos.demo", password: "Demo1234!", role: "admin", fullName: "Ava Admin" },
-  { email: "doctor@clinicos.demo", password: "Demo1234!", role: "doctor", fullName: "Dr. Noah Rivera" },
+  { email: "doctor@clinicos.demo", password: "Demo1234!", role: "doctor", fullName: "Noah Rivera" },
   { email: "nurse@clinicos.demo", password: "Demo1234!", role: "nurse", fullName: "Nora Nurse" },
   {
     email: "receptionist@clinicos.demo",

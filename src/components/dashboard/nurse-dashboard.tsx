@@ -31,6 +31,7 @@ export async function NurseDashboard({ user }: { user: CurrentUser }) {
     { data: pendingInvestigations },
     { data: allMedications },
     { data: allInventoryItems },
+    { count: pendingProcedures },
   ] = await Promise.all([
     supabase
       .from("queue_entries")
@@ -49,6 +50,10 @@ export async function NurseDashboard({ user }: { user: CurrentUser }) {
       .limit(8),
     supabase.from("medications").select("id, stock_quantity, reorder_level"),
     supabase.from("inventory_items").select("id, stock_quantity, reorder_level"),
+    supabase
+      .from("procedure_orders")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "ordered"),
   ]);
 
   const queueRows = (queueToday ?? []).map((q) => {
@@ -105,6 +110,13 @@ export async function NurseDashboard({ user }: { user: CurrentUser }) {
       icon: FlaskConical,
       tone: "warning" as const,
       href: "/laboratory",
+    },
+    {
+      label: "procedures awaiting completion",
+      count: pendingProcedures ?? 0,
+      icon: ClipboardList,
+      tone: "warning" as const,
+      href: "/procedures",
     },
   ];
 

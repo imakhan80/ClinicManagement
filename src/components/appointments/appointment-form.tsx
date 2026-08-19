@@ -46,7 +46,7 @@ export function AppointmentForm({
     formState: { errors, isSubmitting },
   } = useForm<AppointmentInput>({
     resolver: zodResolver(appointmentSchema),
-    defaultValues: { patient_id: patientId ?? "", duration_minutes: 30, status: "scheduled" },
+    defaultValues: { patient_id: patientId ?? "", doctor_id: "", duration_minutes: 30, status: "scheduled" },
   });
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export function AppointmentForm({
       {!patientId && (
         <div className="space-y-1.5">
           <Label>Patient</Label>
-          <Select value={watch("patient_id")} onValueChange={(v) => setValue("patient_id", v ?? "")}>
+          <Select value={watch("patient_id") ?? ""} onValueChange={(v) => setValue("patient_id", v ?? "")}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a patient" />
             </SelectTrigger>
@@ -103,7 +103,7 @@ export function AppointmentForm({
 
       <div className="space-y-1.5">
         <Label>Doctor</Label>
-        <Select value={watch("doctor_id")} onValueChange={(v) => setValue("doctor_id", v ?? undefined)}>
+        <Select value={watch("doctor_id") ?? ""} onValueChange={(v) => setValue("doctor_id", v ?? "")}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Any available doctor" />
           </SelectTrigger>

@@ -8,6 +8,7 @@ import {
   UserPlus,
   CalendarCheck2,
   ShieldCheck,
+  ClipboardList,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentUser } from "@/lib/auth/get-profile";
@@ -40,6 +41,7 @@ export async function ReceptionistDashboard({ user }: { user: CurrentUser }) {
     { data: openInvoices },
     { data: overdueInvoiceRows },
     { count: claimsAwaitingDecision },
+    { count: unbilledProcedures },
   ] = await Promise.all([
     supabase
       .from("appointments")
@@ -69,6 +71,11 @@ export async function ReceptionistDashboard({ user }: { user: CurrentUser }) {
       .from("insurance_claims")
       .select("id", { count: "exact", head: true })
       .eq("status", "submitted"),
+    supabase
+      .from("procedure_orders")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "completed")
+      .is("invoice_id", null),
   ]);
 
   const appointments = todaysAppointments ?? [];
@@ -128,6 +135,13 @@ export async function ReceptionistDashboard({ user }: { user: CurrentUser }) {
       icon: ShieldCheck,
       tone: "warning" as const,
       href: "/insurance",
+    },
+    {
+      label: "completed procedures awaiting billing",
+      count: unbilledProcedures ?? 0,
+      icon: ClipboardList,
+      tone: "warning" as const,
+      href: "/billing",
     },
   ];
 

@@ -10,6 +10,7 @@ import {
   DollarSign,
   CalendarCheck2,
   PackageX,
+  ShieldCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentUser } from "@/lib/auth/get-profile";
@@ -109,9 +110,10 @@ export async function AdminDashboard({ user }: { user: CurrentUser }) {
       .lt("due_date", todayDateStr),
   ]);
 
-  const { data: allInventoryItems } = await supabase
-    .from("inventory_items")
-    .select("id, stock_quantity, reorder_level");
+  const [{ data: allInventoryItems }, { count: claimsAwaitingDecision }] = await Promise.all([
+    supabase.from("inventory_items").select("id, stock_quantity, reorder_level"),
+    supabase.from("insurance_claims").select("id", { count: "exact", head: true }).eq("status", "submitted"),
+  ]);
 
   // --- Doctor lookup for queue rows (via today's appointments) ---
   const doctorByAppointment = new Map<string, string | null>();
@@ -267,6 +269,13 @@ export async function AdminDashboard({ user }: { user: CurrentUser }) {
       icon: Receipt,
       tone: "destructive" as const,
       href: "/billing",
+    },
+    {
+      label: "insurance claims awaiting decision",
+      count: claimsAwaitingDecision ?? 0,
+      icon: ShieldCheck,
+      tone: "warning" as const,
+      href: "/insurance",
     },
   ];
 
