@@ -18,29 +18,9 @@ export async function dispenseItem(input: {
 
   const supabase = await createClient();
 
-  const { data: item, error: itemError } = await supabase
-    .from("prescription_items")
-    .select("medication_name, quantity, quantity_dispensed")
-    .eq("id", input.prescriptionItemId)
-    .single();
-  if (itemError || !item) return { error: itemError?.message ?? "Prescription item not found" };
-
-  const remaining = item.quantity - item.quantity_dispensed;
-  if (input.quantity > remaining) {
-    return { error: `Cannot dispense more than the remaining ${remaining} unit(s).` };
-  }
-
-  const { data: medication } = await supabase
-    .from("medications")
-    .select("id")
-    .ilike("name", item.medication_name)
-    .maybeSingle();
-
-  const { error } = await supabase.from("dispenses").insert({
-    prescription_item_id: input.prescriptionItemId,
-    medication_id: medication?.id ?? null,
-    quantity_dispensed: input.quantity,
-    dispensed_by: user.id,
+  const { error } = await supabase.rpc("dispense_prescription_item", {
+    p_item_id: input.prescriptionItemId,
+    p_quantity: input.quantity,
   });
   if (error) {
     if (error.code === "23514") {

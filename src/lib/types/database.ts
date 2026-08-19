@@ -617,6 +617,10 @@ export interface Database {
         Args: Record<PropertyKey, never>;
         Returns: string;
       };
+      dispense_prescription_item: {
+        Args: { p_item_id: string; p_quantity: number };
+        Returns: Database["public"]["Tables"]["dispenses"]["Row"];
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
