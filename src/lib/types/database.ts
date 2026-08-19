@@ -15,6 +15,7 @@ export type PrescriptionStatus = "pending" | "partially_dispensed" | "dispensed"
 export type FollowUpStatus = "pending" | "scheduled" | "completed" | "cancelled";
 export type InvoiceStatus = "draft" | "issued" | "paid" | "partially_paid" | "void";
 export type PaymentMethod = "cash" | "card" | "bank_transfer" | "insurance" | "other";
+export type MedicalRecordStatus = "draft" | "completed";
 
 export interface Database {
   public: {
@@ -145,6 +146,10 @@ export interface Database {
           attachments: unknown[];
           chief_complaint: string | null;
           vitals_snapshot: Record<string, unknown> | null;
+          soap_subjective: string | null;
+          soap_objective: string | null;
+          soap_plan: string | null;
+          status: MedicalRecordStatus;
           created_at: string;
           updated_at: string;
         };
@@ -158,6 +163,10 @@ export interface Database {
           attachments?: unknown[];
           chief_complaint?: string | null;
           vitals_snapshot?: Record<string, unknown> | null;
+          soap_subjective?: string | null;
+          soap_objective?: string | null;
+          soap_plan?: string | null;
+          status?: MedicalRecordStatus;
         };
         Update: Partial<Database["public"]["Tables"]["medical_records"]["Insert"]>;
         Relationships: [
@@ -318,12 +327,16 @@ export interface Database {
           appointment_id: string;
           patient_id: string;
           taken_by: string | null;
-          blood_pressure: string | null;
+          bp_systolic: number | null;
+          bp_diastolic: number | null;
           pulse_bpm: number | null;
           temperature_c: number | null;
+          respiratory_rate: number | null;
           spo2: number | null;
           weight_kg: number | null;
           height_cm: number | null;
+          bmi: number | null;
+          pain_score: number | null;
           chief_complaint: string | null;
           created_at: string;
         };
@@ -332,12 +345,15 @@ export interface Database {
           appointment_id: string;
           patient_id: string;
           taken_by?: string | null;
-          blood_pressure?: string | null;
+          bp_systolic?: number | null;
+          bp_diastolic?: number | null;
           pulse_bpm?: number | null;
           temperature_c?: number | null;
+          respiratory_rate?: number | null;
           spo2?: number | null;
           weight_kg?: number | null;
           height_cm?: number | null;
+          pain_score?: number | null;
           chief_complaint?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["triage_records"]["Insert"]>;

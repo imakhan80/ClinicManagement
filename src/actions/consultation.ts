@@ -12,12 +12,15 @@ export interface ActionResult {
 export async function saveTriage(input: {
   appointmentId: string;
   patientId: string;
-  bloodPressure?: string;
+  bpSystolic?: number;
+  bpDiastolic?: number;
   pulseBpm?: number;
   temperatureC?: number;
+  respiratoryRate?: number;
   spo2?: number;
   weightKg?: number;
   heightCm?: number;
+  painScore?: number;
   chiefComplaint?: string;
 }): Promise<ActionResult> {
   const user = await getCurrentUser();
@@ -28,12 +31,15 @@ export async function saveTriage(input: {
     appointment_id: input.appointmentId,
     patient_id: input.patientId,
     taken_by: user.id,
-    blood_pressure: input.bloodPressure || null,
+    bp_systolic: input.bpSystolic ?? null,
+    bp_diastolic: input.bpDiastolic ?? null,
     pulse_bpm: input.pulseBpm ?? null,
     temperature_c: input.temperatureC ?? null,
+    respiratory_rate: input.respiratoryRate ?? null,
     spo2: input.spo2 ?? null,
     weight_kg: input.weightKg ?? null,
     height_cm: input.heightCm ?? null,
+    pain_score: input.painScore ?? null,
     chief_complaint: input.chiefComplaint || null,
   });
   if (error) return { error: error.message };
@@ -44,6 +50,19 @@ export async function saveTriage(input: {
     .eq("appointment_id", input.appointmentId);
 
   revalidatePath(`/consultation/${input.appointmentId}`);
+  revalidatePath("/queue");
+  return {};
+}
+
+export async function sendToDoctor(appointmentId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("queue_entries")
+    .update({ status: "ready" })
+    .eq("appointment_id", appointmentId);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/consultation/${appointmentId}`);
   revalidatePath("/queue");
   return {};
 }
