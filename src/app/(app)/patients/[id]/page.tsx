@@ -21,6 +21,7 @@ import { EditPatientSheet } from "@/components/patients/edit-patient-sheet";
 import { PatientQuickActions } from "@/components/patients/patient-quick-actions";
 import { PatientDocuments } from "@/components/patients/patient-documents";
 import { AddPolicyDialog } from "@/components/patients/add-policy-dialog";
+import { LogCommunicationDialog } from "@/components/communications/log-communication-dialog";
 import { ClinicalTimeline, type TimelineEvent } from "@/components/patients/clinical-timeline";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -66,6 +67,7 @@ export default async function PatientDetailPage({
     { data: todaysAppointmentRow },
     { data: procedureOrders },
     { data: policies },
+    { data: communicationLogs },
   ] = await Promise.all([
     supabase
       .from("appointments")
@@ -109,6 +111,11 @@ export default async function PatientDetailPage({
     supabase
       .from("patient_insurance_policies")
       .select("*, insurance_providers(name)")
+      .eq("patient_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("communication_logs")
+      .select("id, channel, direction, subject, body, created_at")
       .eq("patient_id", id)
       .order("created_at", { ascending: false }),
   ]);
@@ -182,6 +189,15 @@ export default async function PatientDetailPage({
       href: order.appointment_id ? `/consultation/${order.appointment_id}?tab=procedures` : undefined,
     });
   }
+  for (const log of communicationLogs ?? []) {
+    events.push({
+      id: log.id,
+      type: "communication",
+      date: log.created_at,
+      title: log.subject || `${log.channel.replace("_", " ")} — ${log.direction}`,
+      subtitle: log.body,
+    });
+  }
   for (const payment of payments ?? []) {
     const invoice = invoiceById.get(payment.invoice_id);
     events.push({
@@ -251,12 +267,15 @@ export default async function PatientDetailPage({
           <EditPatientSheet patient={patient} />
         </div>
 
-        <div className="border-t border-border pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
           <PatientQuickActions
             patientId={patient.id}
             todaysAppointment={todaysAppointment}
             role={user!.role}
           />
+          {(user?.role === "admin" || user?.role === "receptionist") && (
+            <LogCommunicationDialog patientId={patient.id} />
+          )}
         </div>
       </Card>
 

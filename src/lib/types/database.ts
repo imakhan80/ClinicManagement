@@ -19,6 +19,8 @@ export type MedicalRecordStatus = "draft" | "completed";
 export type InventoryMovementReason = "received" | "procedure_use" | "adjustment" | "wastage";
 export type ProcedureOrderStatus = "ordered" | "completed" | "cancelled";
 export type InsuranceClaimStatus = "draft" | "submitted" | "approved" | "rejected" | "paid";
+export type CommunicationChannel = "call" | "sms" | "email" | "in_person";
+export type CommunicationDirection = "outbound" | "inbound";
 
 export interface Database {
   public: {
@@ -862,6 +864,65 @@ export interface Database {
             columns: ["policy_id"];
             isOneToOne: false;
             referencedRelation: "patient_insurance_policies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      communication_templates: {
+        Row: {
+          id: string;
+          name: string;
+          channel: CommunicationChannel;
+          subject: string | null;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          channel: CommunicationChannel;
+          subject?: string | null;
+          body: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["communication_templates"]["Insert"]>;
+        Relationships: [];
+      };
+      communication_logs: {
+        Row: {
+          id: string;
+          patient_id: string;
+          channel: CommunicationChannel;
+          direction: CommunicationDirection;
+          subject: string | null;
+          body: string;
+          template_id: string | null;
+          logged_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          channel: CommunicationChannel;
+          direction?: CommunicationDirection;
+          subject?: string | null;
+          body: string;
+          template_id?: string | null;
+          logged_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["communication_logs"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "communication_logs_patient_id_fkey";
+            columns: ["patient_id"];
+            isOneToOne: false;
+            referencedRelation: "patients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "communication_logs_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "communication_templates";
             referencedColumns: ["id"];
           },
         ];

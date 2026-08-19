@@ -8,13 +8,22 @@ import {
   Receipt,
   CalendarCheck2,
   ClipboardList,
+  MessageSquare,
 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { formatDateTime } from "@/lib/format";
 
 export interface TimelineEvent {
   id: string;
-  type: "visit" | "diagnosis" | "prescription" | "investigation" | "procedure" | "payment" | "follow_up";
+  type:
+    | "visit"
+    | "diagnosis"
+    | "prescription"
+    | "investigation"
+    | "procedure"
+    | "payment"
+    | "follow_up"
+    | "communication";
   date: string;
   title: string;
   subtitle?: string;
@@ -29,6 +38,7 @@ const TYPE_META: Record<TimelineEvent["type"], { icon: LucideIcon; className: st
   procedure: { icon: ClipboardList, className: "bg-primary/10 text-primary" },
   payment: { icon: Receipt, className: "bg-accent text-accent-foreground" },
   follow_up: { icon: CalendarCheck2, className: "bg-muted text-muted-foreground" },
+  communication: { icon: MessageSquare, className: "bg-info/10 text-info" },
 };
 
 export function ClinicalTimeline({ events }: { events: TimelineEvent[] }) {

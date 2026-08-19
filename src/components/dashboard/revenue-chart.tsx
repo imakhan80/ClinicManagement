@@ -17,7 +17,13 @@ const PAD_R = 8;
 const PAD_T = 12;
 const PAD_B = 24;
 
-export function RevenueChart({ points }: { points: Point[] }) {
+export function RevenueChart({
+  points,
+  title = "Revenue — last 14 days",
+}: {
+  points: Point[];
+  title?: string;
+}) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
@@ -41,7 +47,7 @@ export function RevenueChart({ points }: { points: Point[] }) {
   return (
     <Card className="gap-1 p-5 shadow-sm">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold">Revenue — last 14 days</h2>
+        <h2 className="text-sm font-semibold">{title}</h2>
         <p className="text-sm font-semibold tabular-nums">{formatCurrency(total)}</p>
       </div>
       <div className="relative mt-2">

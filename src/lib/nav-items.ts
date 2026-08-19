@@ -40,9 +40,9 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/procedures", label: "Procedures", icon: ClipboardList, roles: ["admin", "doctor", "nurse"] },
   { href: "/insurance", label: "Insurance", icon: ShieldCheck, roles: ["admin", "receptionist"] },
   { href: "/inventory", label: "Inventory", icon: Package, roles: ["admin", "nurse"] },
-  { href: "#", label: "Reports", icon: BarChart3, soon: true },
-  { href: "#", label: "AI Assistant", icon: Sparkles, soon: true },
-  { href: "#", label: "Communications", icon: MessageSquare, soon: true },
+  { href: "/reports", label: "Reports", icon: BarChart3, roles: ["admin"] },
+  { href: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
+  { href: "/communications", label: "Communications", icon: MessageSquare, roles: ["admin", "receptionist"] },
   { href: "#", label: "Settings", icon: Settings, soon: true },
 ];
 
