@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -43,7 +43,12 @@ export function ConsultationWorkspace({
   currentUserRole: Role;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+  const requestedTab = searchParams.get("tab");
+  const validTabs = ["triage", "diagnosis", "investigations", "prescriptions", "follow-up"];
+  const initialTab = requestedTab && validTabs.includes(requestedTab) ? requestedTab : "triage";
 
   const isDoctor = currentUserRole === "doctor";
   const isClinical = currentUserRole === "doctor" || currentUserRole === "nurse" || currentUserRole === "admin";
@@ -77,7 +82,7 @@ export function ConsultationWorkspace({
       </div>
 
       <Card className="p-5 shadow-sm">
-        <Tabs defaultValue="triage">
+        <Tabs defaultValue={initialTab}>
           <TabsList>
             <TabsTrigger value="triage">Vitals &amp; triage</TabsTrigger>
             <TabsTrigger value="diagnosis">Diagnosis</TabsTrigger>

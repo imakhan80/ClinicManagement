@@ -25,24 +25,35 @@ interface FormValues {
   items: { description: string; quantity: number; unit_price: number }[];
 }
 
-export function InvoiceForm({ onSuccess }: { onSuccess?: (id: string) => void }) {
+export function InvoiceForm({
+  patientId,
+  onSuccess,
+}: {
+  patientId?: string;
+  onSuccess?: (id: string) => void;
+}) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [patients, setPatients] = useState<{ id: string; label: string }[]>([]);
 
   const { register, control, handleSubmit, watch, setValue, formState: { isSubmitting, errors } } =
     useForm<FormValues>({
-      defaultValues: { tax: 0, items: [{ description: "", quantity: 1, unit_price: 0 }] },
+      defaultValues: {
+        patient_id: patientId ?? "",
+        tax: 0,
+        items: [{ description: "", quantity: 1, unit_price: 0 }],
+      },
     });
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
   useEffect(() => {
+    if (patientId) return;
     createClient()
       .from("patients")
       .select("id, full_name")
       .order("full_name")
       .then(({ data }) => setPatients((data ?? []).map((p) => ({ id: p.id, label: p.full_name }))));
-  }, []);
+  }, [patientId]);
 
   const items = watch("items");
   const subtotal = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.unit_price) || 0), 0);
@@ -62,22 +73,24 @@ export function InvoiceForm({ onSuccess }: { onSuccess?: (id: string) => void })
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label>Patient</Label>
-          <Select value={watch("patient_id")} onValueChange={(v) => setValue("patient_id", v ?? "")}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a patient" />
-            </SelectTrigger>
-            <SelectContent>
-              {patients.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.patient_id && <p className="text-xs text-destructive">Select a patient</p>}
-        </div>
+        {!patientId && (
+          <div className="space-y-1.5">
+            <Label>Patient</Label>
+            <Select value={watch("patient_id")} onValueChange={(v) => setValue("patient_id", v ?? "")}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a patient" />
+              </SelectTrigger>
+              <SelectContent>
+                {patients.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.patient_id && <p className="text-xs text-destructive">Select a patient</p>}
+          </div>
+        )}
         <div className="space-y-1.5">
           <Label>Due date</Label>
           <Input type="date" {...register("due_date")} />

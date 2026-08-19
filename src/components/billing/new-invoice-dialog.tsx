@@ -14,17 +14,17 @@ import {
 } from "@/components/ui/dialog";
 import { InvoiceForm } from "@/components/billing/invoice-form";
 
-export function NewInvoiceDialog() {
+export function NewInvoiceDialog({ patientId }: { patientId?: string }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (searchParams.get("new") === "1") {
+    if (!patientId && searchParams.get("new") === "1") {
       setOpen(true);
       router.replace("/billing");
     }
-  }, [searchParams, router]);
+  }, [patientId, searchParams, router]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -42,6 +42,7 @@ export function NewInvoiceDialog() {
           <DialogDescription>Bill a patient for services rendered.</DialogDescription>
         </DialogHeader>
         <InvoiceForm
+          patientId={patientId}
           onSuccess={(id) => {
             setOpen(false);
             router.push(`/billing/${id}`);
