@@ -97,6 +97,7 @@ export interface Database {
           doctor_id: string | null;
           scheduled_at: string;
           duration_minutes: number;
+          ends_at: string;
           status: AppointmentStatus;
           reason: string | null;
           notes: string | null;

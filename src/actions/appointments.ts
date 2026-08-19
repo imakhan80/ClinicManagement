@@ -34,7 +34,12 @@ export async function createAppointment(input: unknown): Promise<ActionResult> {
     .select("id")
     .single();
 
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.code === "23P01") {
+      return { error: "This doctor already has an appointment that overlaps this time slot." };
+    }
+    return { error: error.message };
+  }
 
   revalidatePath("/appointments");
   revalidatePath("/dashboard");
