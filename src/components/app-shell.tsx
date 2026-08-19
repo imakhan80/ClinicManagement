@@ -254,7 +254,7 @@ export function AppShell({
 
           <div className="flex items-center gap-1.5">
             <QuickAddMenu role={user.role} />
-            <NotificationsMenu />
+            <NotificationsMenu userId={user.id} />
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
