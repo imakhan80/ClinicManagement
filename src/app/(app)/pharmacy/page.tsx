@@ -1,4 +1,4 @@
-import { Pill, PackageSearch } from "lucide-react";
+import { Pill, PackageSearch, History } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/get-profile";
 import { PageHeader } from "@/components/page-header";
@@ -6,14 +6,14 @@ import { EmptyState } from "@/components/empty-state";
 import { Card } from "@/components/ui/card";
 import { DispenseRow } from "@/components/pharmacy/dispense-row";
 import { NewMedicationDialog } from "@/components/pharmacy/new-medication-dialog";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatRelative } from "@/lib/format";
 
 export default async function PharmacyPage() {
   const user = await getCurrentUser();
   const supabase = await createClient();
   const canDispense = user?.role === "admin" || user?.role === "nurse";
 
-  const [{ data: prescriptions }, { data: medications }] = await Promise.all([
+  const [{ data: prescriptions }, { data: medications }, { data: recentDispenses }] = await Promise.all([
     supabase
       .from("prescriptions")
       .select(
@@ -22,6 +22,13 @@ export default async function PharmacyPage() {
       .in("status", ["pending", "partially_dispensed"])
       .order("created_at", { ascending: false }),
     supabase.from("medications").select("*").order("name"),
+    supabase
+      .from("dispenses")
+      .select(
+        "id, quantity_dispensed, dispensed_at, prescription_items(medication_name), dispensed_by:profiles!dispensed_by(full_name)"
+      )
+      .order("dispensed_at", { ascending: false })
+      .limit(10),
   ]);
 
   return (
@@ -110,6 +117,34 @@ export default async function PharmacyPage() {
           </Card>
         )}
       </div>
+
+      {recentDispenses && recentDispenses.length > 0 && (
+        <div>
+          <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold">
+            <History className="size-4" />
+            Recently dispensed
+          </h2>
+          <Card className="gap-0 overflow-hidden p-0 shadow-sm">
+            <ul className="divide-y divide-border">
+              {recentDispenses.map((d) => {
+                const item = Array.isArray(d.prescription_items) ? d.prescription_items[0] : d.prescription_items;
+                const staff = Array.isArray(d.dispensed_by) ? d.dispensed_by[0] : d.dispensed_by;
+                return (
+                  <li key={d.id} className="flex items-center justify-between px-5 py-2.5 text-sm">
+                    <span>
+                      {item?.medication_name} × {d.quantity_dispensed}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {staff?.full_name ? `${staff.full_name} · ` : ""}
+                      {formatRelative(d.dispensed_at)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
