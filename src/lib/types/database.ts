@@ -558,6 +558,29 @@ export interface Database {
           },
         ];
       };
+      clinical_note_templates: {
+        Row: {
+          id: string;
+          created_by: string;
+          name: string;
+          subjective: string | null;
+          objective: string | null;
+          assessment: string | null;
+          plan: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          created_by: string;
+          name: string;
+          subjective?: string | null;
+          objective?: string | null;
+          assessment?: string | null;
+          plan?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["clinical_note_templates"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

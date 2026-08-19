@@ -67,11 +67,14 @@ export async function sendToDoctor(appointmentId: string): Promise<ActionResult>
   return {};
 }
 
-export async function saveDiagnosis(input: {
+export async function saveSoapNote(input: {
   appointmentId: string;
   patientId: string;
-  diagnosis: string;
-  notes?: string;
+  subjective?: string;
+  objective?: string;
+  assessment: string;
+  plan?: string;
+  complete?: boolean;
 }): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return { error: "Not authenticated" };
@@ -82,14 +85,42 @@ export async function saveDiagnosis(input: {
       appointment_id: input.appointmentId,
       patient_id: input.patientId,
       doctor_id: user.id,
-      diagnosis: input.diagnosis,
-      prescription: input.notes || null,
+      soap_subjective: input.subjective || null,
+      soap_objective: input.objective || null,
+      diagnosis: input.assessment,
+      soap_plan: input.plan || null,
+      status: input.complete ? "completed" : "draft",
     },
     { onConflict: "appointment_id" }
   );
   if (error) return { error: error.message };
 
   revalidatePath(`/consultation/${input.appointmentId}`);
+  revalidatePath(`/patients/${input.patientId}`);
+  return {};
+}
+
+export async function saveNoteTemplate(input: {
+  name: string;
+  subjective?: string;
+  objective?: string;
+  assessment?: string;
+  plan?: string;
+}): Promise<ActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("clinical_note_templates").insert({
+    created_by: user.id,
+    name: input.name,
+    subjective: input.subjective || null,
+    objective: input.objective || null,
+    assessment: input.assessment || null,
+    plan: input.plan || null,
+  });
+  if (error) return { error: error.message };
+
   return {};
 }
 
