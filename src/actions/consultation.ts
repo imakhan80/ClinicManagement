@@ -165,6 +165,7 @@ export async function updateInvestigationResult(input: {
   if (error) return { error: error.message };
 
   revalidatePath(`/consultation/${input.appointmentId}`);
+  revalidatePath("/laboratory");
   return {};
 }
 

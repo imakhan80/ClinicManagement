@@ -25,6 +25,12 @@ interface FormValues {
   testName: string;
 }
 
+const QUICK_TESTS: Record<"lab" | "imaging" | "other", string[]> = {
+  lab: ["CBC", "Blood Glucose", "Lipid Profile", "LFTs", "KFTs", "Urinalysis", "Thyroid Panel", "HbA1c"],
+  imaging: ["X-Ray Chest", "Ultrasound Abdomen", "CT Scan", "MRI", "ECG"],
+  other: [],
+};
+
 export function InvestigationsPanel({
   appointmentId,
   patientId,
@@ -39,6 +45,7 @@ export function InvestigationsPanel({
   canUpdate: boolean;
 }) {
   const [category, setCategory] = useState<"lab" | "imaging" | "other">("lab");
+  const [quickOrdering, setQuickOrdering] = useState<string | null>(null);
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<FormValues>({
     defaultValues: { testName: "" },
   });
@@ -46,6 +53,12 @@ export function InvestigationsPanel({
   async function onSubmit(values: FormValues) {
     await addInvestigation({ appointmentId, patientId, category, testName: values.testName });
     reset({ testName: "" });
+  }
+
+  async function quickOrder(testName: string) {
+    setQuickOrdering(testName);
+    await addInvestigation({ appointmentId, patientId, category, testName });
+    setQuickOrdering(null);
   }
 
   return (
@@ -61,7 +74,7 @@ export function InvestigationsPanel({
       )}
 
       {canOrder && (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-wrap items-end gap-2 border-t border-border pt-4">
+        <div className="space-y-3 border-t border-border pt-4">
           <div className="w-28">
             <Select value={category} onValueChange={(v) => setCategory(v as typeof category)}>
               <SelectTrigger className="w-full">
@@ -74,12 +87,32 @@ export function InvestigationsPanel({
               </SelectContent>
             </Select>
           </div>
-          <Input placeholder="Test name (e.g. CBC)" className="flex-1" {...register("testName", { required: true })} />
-          <Button type="submit" size="sm" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
-            Order
-          </Button>
-        </form>
+
+          {QUICK_TESTS[category].length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {QUICK_TESTS[category].map((test) => (
+                <button
+                  key={test}
+                  type="button"
+                  disabled={quickOrdering !== null}
+                  onClick={() => quickOrder(test)}
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                >
+                  {quickOrdering === test ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
+                  {test}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-wrap items-end gap-2">
+            <Input placeholder="Other test name…" className="flex-1" {...register("testName", { required: true })} />
+            <Button type="submit" size="sm" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+              Order
+            </Button>
+          </form>
+        </div>
       )}
     </div>
   );
