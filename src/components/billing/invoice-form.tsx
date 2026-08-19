@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Loader2, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,8 +68,10 @@ export function InvoiceForm({
     const result = await createInvoice(values);
     if (result.error) {
       setServerError(result.error);
+      toast.error(result.error);
       return;
     }
+    toast.success("Invoice created");
     router.refresh();
     if (result.id) onSuccess?.(result.id);
   }

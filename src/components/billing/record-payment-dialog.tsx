@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { CreditCard, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,8 +44,10 @@ export function RecordPaymentDialog({ invoiceId, balance }: { invoiceId: string;
     const result = await recordPayment(invoiceId, values);
     if (result.error) {
       setServerError(result.error);
+      toast.error(result.error);
       return;
     }
+    toast.success("Payment recorded");
     setOpen(false);
     router.refresh();
   }

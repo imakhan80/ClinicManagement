@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,8 +70,10 @@ export function AppointmentForm({
     const result = await createAppointment(values);
     if (result.error) {
       setServerError(result.error);
+      toast.error(result.error);
       return;
     }
+    toast.success("Appointment booked");
     router.refresh();
     onSuccess?.();
   }

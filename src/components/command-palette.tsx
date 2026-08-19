@@ -48,7 +48,7 @@ export function CommandPalette({ role }: { role: Role }) {
       createClient()
         .from("patients")
         .select("id, full_name, mrn")
-        .ilike("full_name", `%${query}%`)
+        .or(`full_name.ilike.%${query}%,mrn.ilike.%${query}%`)
         .limit(6)
         .then(({ data }) => setPatients(data ?? []));
     }, 200);
