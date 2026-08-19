@@ -12,6 +12,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { TriagePanel } from "@/components/consultation/triage-panel";
 import { DiagnosisPanel } from "@/components/consultation/diagnosis-panel";
 import { InvestigationsPanel } from "@/components/consultation/investigations-panel";
+import { ProceduresPanel } from "@/components/consultation/procedures-panel";
 import { PrescriptionsPanel } from "@/components/consultation/prescriptions-panel";
 import { FollowUpPanel } from "@/components/consultation/follow-up-panel";
 import { completeQueueEntry } from "@/actions/queue";
@@ -27,6 +28,7 @@ type Investigation = Database["public"]["Tables"]["investigations"]["Row"];
 type Prescription = Database["public"]["Tables"]["prescriptions"]["Row"] & {
   prescription_items: Database["public"]["Tables"]["prescription_items"]["Row"][];
 };
+type ProcedureOrder = Database["public"]["Tables"]["procedure_orders"]["Row"];
 
 export function ConsultationWorkspace({
   appointment,
@@ -36,6 +38,7 @@ export function ConsultationWorkspace({
   record,
   investigations,
   prescriptions,
+  procedureOrders,
   currentUserRole,
 }: {
   appointment: Appointment;
@@ -45,6 +48,7 @@ export function ConsultationWorkspace({
   record: MedicalRecord | null;
   investigations: Investigation[];
   prescriptions: Prescription[];
+  procedureOrders: ProcedureOrder[];
   currentUserRole: Role;
 }) {
   const router = useRouter();
@@ -52,7 +56,7 @@ export function ConsultationWorkspace({
   const [isPending, startTransition] = useTransition();
 
   const requestedTab = searchParams.get("tab");
-  const validTabs = ["triage", "diagnosis", "investigations", "prescriptions", "follow-up"];
+  const validTabs = ["triage", "diagnosis", "investigations", "procedures", "prescriptions", "follow-up"];
   const initialTab = requestedTab && validTabs.includes(requestedTab) ? requestedTab : "triage";
 
   const isDoctor = currentUserRole === "doctor";
@@ -142,6 +146,7 @@ export function ConsultationWorkspace({
               <TabsTrigger value="triage">Vitals &amp; triage</TabsTrigger>
               <TabsTrigger value="diagnosis">SOAP note</TabsTrigger>
               <TabsTrigger value="investigations">Investigations</TabsTrigger>
+              <TabsTrigger value="procedures">Procedures</TabsTrigger>
               <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
               <TabsTrigger value="follow-up">Follow-up</TabsTrigger>
             </TabsList>
@@ -162,6 +167,15 @@ export function ConsultationWorkspace({
                 appointmentId={appointment.id}
                 patientId={patient.id}
                 investigations={investigations}
+                canOrder={isDoctor}
+                canUpdate={isClinical}
+              />
+            </TabsContent>
+            <TabsContent value="procedures" className="mt-4">
+              <ProceduresPanel
+                appointmentId={appointment.id}
+                patientId={patient.id}
+                procedureOrders={procedureOrders}
                 canOrder={isDoctor}
                 canUpdate={isClinical}
               />

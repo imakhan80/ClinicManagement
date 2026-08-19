@@ -35,6 +35,7 @@ export default async function ConsultationPage({
     { data: record },
     { data: investigations },
     { data: prescriptions },
+    { data: procedureOrders },
   ] = await Promise.all([
     supabase
       .from("queue_entries")
@@ -59,6 +60,11 @@ export default async function ConsultationPage({
       .select("*, prescription_items(*)")
       .eq("appointment_id", appointmentId)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("procedure_orders")
+      .select("*")
+      .eq("appointment_id", appointmentId)
+      .order("ordered_at", { ascending: false }),
   ]);
 
   return (
@@ -93,6 +99,7 @@ export default async function ConsultationPage({
         record={record ?? null}
         investigations={investigations ?? []}
         prescriptions={prescriptions ?? []}
+        procedureOrders={procedureOrders ?? []}
         currentUserRole={user!.role}
       />
     </div>

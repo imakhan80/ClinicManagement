@@ -8,6 +8,7 @@ import { RecordPaymentDialog } from "@/components/billing/record-payment-dialog"
 import { VoidInvoiceButton } from "@/components/billing/void-invoice-button";
 import { RefundDialog } from "@/components/billing/refund-dialog";
 import { PrintReceiptButton } from "@/components/billing/print-receipt-button";
+import { InsuranceClaimPanel } from "@/components/billing/insurance-claim-panel";
 import { Card } from "@/components/ui/card";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format";
 import { invoiceStatus } from "@/lib/status";
@@ -28,9 +29,10 @@ export default async function InvoiceDetailPage({
     .single();
   if (!invoice) notFound();
 
-  const [{ data: items }, { data: payments }] = await Promise.all([
+  const [{ data: items }, { data: payments }, { data: claim }] = await Promise.all([
     supabase.from("invoice_items").select("*").eq("invoice_id", id),
     supabase.from("payments").select("*").eq("invoice_id", id).order("paid_at", { ascending: false }),
+    supabase.from("insurance_claims").select("*").eq("invoice_id", id).maybeSingle(),
   ]);
 
   const patient = Array.isArray(invoice.patients) ? invoice.patients[0] : invoice.patients;
@@ -47,6 +49,7 @@ export default async function InvoiceDetailPage({
     (user?.role === "admin" || user?.role === "receptionist") && balance > 0 && invoice.status !== "void";
   const canVoid = user?.role === "admin" && invoice.status !== "void" && grossPaid === 0;
   const canRefund = user?.role === "admin" && netPaid > 0;
+  const canManageInsurance = user?.role === "admin" || user?.role === "receptionist";
 
   return (
     <div className="space-y-6">
@@ -131,6 +134,16 @@ export default async function InvoiceDetailPage({
           )}
         </div>
       </Card>
+
+      {invoice.status !== "void" && (
+        <InsuranceClaimPanel
+          invoiceId={invoice.id}
+          patientId={invoice.patient_id}
+          balance={balance}
+          claim={claim ?? null}
+          canManage={canManageInsurance}
+        />
+      )}
 
       {payments && payments.length > 0 && (
         <Card className="gap-0 overflow-hidden p-0 shadow-sm">

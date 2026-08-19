@@ -7,13 +7,14 @@ import {
   FlaskConical,
   Receipt,
   CalendarCheck2,
+  ClipboardList,
 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { formatDateTime } from "@/lib/format";
 
 export interface TimelineEvent {
   id: string;
-  type: "visit" | "diagnosis" | "prescription" | "investigation" | "payment" | "follow_up";
+  type: "visit" | "diagnosis" | "prescription" | "investigation" | "procedure" | "payment" | "follow_up";
   date: string;
   title: string;
   subtitle?: string;
@@ -25,6 +26,7 @@ const TYPE_META: Record<TimelineEvent["type"], { icon: LucideIcon; className: st
   diagnosis: { icon: Stethoscope, className: "bg-primary/10 text-primary" },
   prescription: { icon: Pill, className: "bg-success/10 text-success" },
   investigation: { icon: FlaskConical, className: "bg-warning/15 text-warning-foreground" },
+  procedure: { icon: ClipboardList, className: "bg-primary/10 text-primary" },
   payment: { icon: Receipt, className: "bg-accent text-accent-foreground" },
   follow_up: { icon: CalendarCheck2, className: "bg-muted text-muted-foreground" },
 };

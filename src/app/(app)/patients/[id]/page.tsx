@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Pill,
   FlaskConical,
+  ShieldCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/get-profile";
@@ -19,6 +20,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { EditPatientSheet } from "@/components/patients/edit-patient-sheet";
 import { PatientQuickActions } from "@/components/patients/patient-quick-actions";
 import { PatientDocuments } from "@/components/patients/patient-documents";
+import { AddPolicyDialog } from "@/components/patients/add-policy-dialog";
 import { ClinicalTimeline, type TimelineEvent } from "@/components/patients/clinical-timeline";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -35,6 +37,7 @@ import {
   invoiceStatus,
   investigationStatus,
   prescriptionStatus,
+  procedureOrderStatus,
 } from "@/lib/status";
 
 export default async function PatientDetailPage({
@@ -61,6 +64,8 @@ export default async function PatientDetailPage({
     { data: prescriptions },
     { data: investigations },
     { data: todaysAppointmentRow },
+    { data: procedureOrders },
+    { data: policies },
   ] = await Promise.all([
     supabase
       .from("appointments")
@@ -96,6 +101,16 @@ export default async function PatientDetailPage({
       .order("scheduled_at", { ascending: true })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from("procedure_orders")
+      .select("id, appointment_id, procedure_name, status, price, ordered_at")
+      .eq("patient_id", id)
+      .order("ordered_at", { ascending: false }),
+    supabase
+      .from("patient_insurance_policies")
+      .select("*, insurance_providers(name)")
+      .eq("patient_id", id)
+      .order("created_at", { ascending: false }),
   ]);
 
   const invoiceIds = (invoices ?? []).map((i) => i.id);
@@ -155,6 +170,16 @@ export default async function PatientDetailPage({
       title: `${inv.category === "lab" ? "Lab" : inv.category === "imaging" ? "Imaging" : "Investigation"}: ${inv.test_name}`,
       subtitle: investigationStatus[inv.status]?.label ?? inv.status,
       href: inv.appointment_id ? `/consultation/${inv.appointment_id}?tab=investigations` : undefined,
+    });
+  }
+  for (const order of procedureOrders ?? []) {
+    events.push({
+      id: order.id,
+      type: "procedure",
+      date: order.ordered_at,
+      title: `Procedure: ${order.procedure_name}`,
+      subtitle: procedureOrderStatus[order.status]?.label ?? order.status,
+      href: order.appointment_id ? `/consultation/${order.appointment_id}?tab=procedures` : undefined,
     });
   }
   for (const payment of payments ?? []) {
@@ -244,6 +269,7 @@ export default async function PatientDetailPage({
           <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
           <TabsTrigger value="investigations">Lab &amp; imaging</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
+          <TabsTrigger value="insurance">Insurance</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
 
@@ -442,6 +468,46 @@ export default async function PatientDetailPage({
               </ul>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="insurance" className="mt-4">
+          <div className="space-y-3">
+            {(user?.role === "admin" || user?.role === "receptionist") && (
+              <div className="flex justify-end">
+                <AddPolicyDialog patientId={patient.id} />
+              </div>
+            )}
+            {!policies || policies.length === 0 ? (
+              <EmptyState icon={ShieldCheck} title="No insurance policies on file" />
+            ) : (
+              <div className="space-y-3">
+                {policies.map((policy) => {
+                  const provider = Array.isArray(policy.insurance_providers)
+                    ? policy.insurance_providers[0]
+                    : policy.insurance_providers;
+                  return (
+                    <Card key={policy.id} className="gap-1.5 p-5 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">{provider?.name ?? "Unknown provider"}</p>
+                        {policy.is_primary && <StatusBadge label="Primary" tone="info" />}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Policy {policy.policy_number}
+                        {policy.group_number ? ` · Group ${policy.group_number}` : ""} ·{" "}
+                        {policy.coverage_percent}% coverage
+                      </p>
+                      {(policy.valid_from || policy.valid_to) && (
+                        <p className="text-xs text-muted-foreground">
+                          {policy.valid_from ? formatDate(policy.valid_from) : "—"} –{" "}
+                          {policy.valid_to ? formatDate(policy.valid_to) : "—"}
+                        </p>
+                      )}
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="documents" className="mt-4">

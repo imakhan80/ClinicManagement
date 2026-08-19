@@ -16,6 +16,9 @@ export type FollowUpStatus = "pending" | "scheduled" | "completed" | "cancelled"
 export type InvoiceStatus = "draft" | "issued" | "paid" | "partially_paid" | "void";
 export type PaymentMethod = "cash" | "card" | "bank_transfer" | "insurance" | "other";
 export type MedicalRecordStatus = "draft" | "completed";
+export type InventoryMovementReason = "received" | "procedure_use" | "adjustment" | "wastage";
+export type ProcedureOrderStatus = "ordered" | "completed" | "cancelled";
+export type InsuranceClaimStatus = "draft" | "submitted" | "approved" | "rejected" | "paid";
 
 export interface Database {
   public: {
@@ -610,6 +613,259 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["clinical_note_templates"]["Insert"]>;
         Relationships: [];
       };
+      inventory_items: {
+        Row: {
+          id: string;
+          name: string;
+          category: string | null;
+          unit: string | null;
+          unit_cost: number;
+          stock_quantity: number;
+          reorder_level: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category?: string | null;
+          unit?: string | null;
+          unit_cost?: number;
+          stock_quantity?: number;
+          reorder_level?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["inventory_items"]["Insert"]>;
+        Relationships: [];
+      };
+      inventory_movements: {
+        Row: {
+          id: string;
+          item_id: string;
+          change_qty: number;
+          reason: InventoryMovementReason;
+          reference_type: string | null;
+          reference_id: string | null;
+          note: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          item_id: string;
+          change_qty: number;
+          reason: InventoryMovementReason;
+          reference_type?: string | null;
+          reference_id?: string | null;
+          note?: string | null;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["inventory_movements"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "inventory_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      procedure_catalog: {
+        Row: {
+          id: string;
+          name: string;
+          category: string | null;
+          default_price: number;
+          default_duration_minutes: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category?: string | null;
+          default_price?: number;
+          default_duration_minutes?: number | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["procedure_catalog"]["Insert"]>;
+        Relationships: [];
+      };
+      procedure_consumables: {
+        Row: {
+          id: string;
+          procedure_id: string;
+          inventory_item_id: string;
+          quantity_per_procedure: number;
+        };
+        Insert: {
+          id?: string;
+          procedure_id: string;
+          inventory_item_id: string;
+          quantity_per_procedure?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["procedure_consumables"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "procedure_consumables_procedure_id_fkey";
+            columns: ["procedure_id"];
+            isOneToOne: false;
+            referencedRelation: "procedure_catalog";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "procedure_consumables_inventory_item_id_fkey";
+            columns: ["inventory_item_id"];
+            isOneToOne: false;
+            referencedRelation: "inventory_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      procedure_orders: {
+        Row: {
+          id: string;
+          appointment_id: string | null;
+          patient_id: string;
+          procedure_id: string | null;
+          procedure_name: string;
+          price: number;
+          ordered_by: string;
+          performed_by: string | null;
+          status: ProcedureOrderStatus;
+          invoice_id: string | null;
+          notes: string | null;
+          ordered_at: string;
+          performed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          appointment_id?: string | null;
+          patient_id: string;
+          procedure_id?: string | null;
+          procedure_name: string;
+          price?: number;
+          ordered_by: string;
+          performed_by?: string | null;
+          status?: ProcedureOrderStatus;
+          invoice_id?: string | null;
+          notes?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["procedure_orders"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "procedure_orders_patient_id_fkey";
+            columns: ["patient_id"];
+            isOneToOne: false;
+            referencedRelation: "patients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "procedure_orders_procedure_id_fkey";
+            columns: ["procedure_id"];
+            isOneToOne: false;
+            referencedRelation: "procedure_catalog";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      insurance_providers: {
+        Row: {
+          id: string;
+          name: string;
+          phone: string | null;
+          email: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          phone?: string | null;
+          email?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["insurance_providers"]["Insert"]>;
+        Relationships: [];
+      };
+      patient_insurance_policies: {
+        Row: {
+          id: string;
+          patient_id: string;
+          provider_id: string;
+          policy_number: string;
+          group_number: string | null;
+          coverage_percent: number;
+          is_primary: boolean;
+          valid_from: string | null;
+          valid_to: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          provider_id: string;
+          policy_number: string;
+          group_number?: string | null;
+          coverage_percent?: number;
+          is_primary?: boolean;
+          valid_from?: string | null;
+          valid_to?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["patient_insurance_policies"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "patient_insurance_policies_provider_id_fkey";
+            columns: ["provider_id"];
+            isOneToOne: false;
+            referencedRelation: "insurance_providers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      insurance_claims: {
+        Row: {
+          id: string;
+          invoice_id: string;
+          policy_id: string;
+          status: InsuranceClaimStatus;
+          claimed_amount: number;
+          approved_amount: number | null;
+          submitted_at: string | null;
+          decided_at: string | null;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_id: string;
+          policy_id: string;
+          status?: InsuranceClaimStatus;
+          claimed_amount: number;
+          approved_amount?: number | null;
+          submitted_at?: string | null;
+          decided_at?: string | null;
+          notes?: string | null;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["insurance_claims"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "insurance_claims_invoice_id_fkey";
+            columns: ["invoice_id"];
+            isOneToOne: false;
+            referencedRelation: "invoices";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "insurance_claims_policy_id_fkey";
+            columns: ["policy_id"];
+            isOneToOne: false;
+            referencedRelation: "patient_insurance_policies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -620,6 +876,10 @@ export interface Database {
       dispense_prescription_item: {
         Args: { p_item_id: string; p_quantity: number };
         Returns: Database["public"]["Tables"]["dispenses"]["Row"];
+      };
+      complete_procedure_order: {
+        Args: { p_order_id: string };
+        Returns: Database["public"]["Tables"]["procedure_orders"]["Row"];
       };
     };
     Enums: Record<string, never>;

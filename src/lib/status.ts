@@ -64,6 +64,20 @@ export const followUpStatus: Record<string, StatusMeta> = {
   cancelled: { label: "Cancelled", tone: "neutral" },
 };
 
+export const procedureOrderStatus: Record<string, StatusMeta> = {
+  ordered: { label: "Ordered", tone: "warning" },
+  completed: { label: "Completed", tone: "success" },
+  cancelled: { label: "Cancelled", tone: "neutral" },
+};
+
+export const insuranceClaimStatus: Record<string, StatusMeta> = {
+  draft: { label: "Draft", tone: "neutral" },
+  submitted: { label: "Submitted", tone: "info" },
+  approved: { label: "Approved", tone: "success" },
+  rejected: { label: "Rejected", tone: "destructive" },
+  paid: { label: "Paid", tone: "success" },
+};
+
 export const roleLabel: Record<string, string> = {
   admin: "Admin",
   doctor: "Doctor",
