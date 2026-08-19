@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,14 @@ import { PatientForm } from "@/components/patients/patient-form";
 export function NewPatientSheet() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setOpen(true);
+      router.replace("/patients");
+    }
+  }, [searchParams, router]);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

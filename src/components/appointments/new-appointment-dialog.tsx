@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,15 @@ import { AppointmentForm } from "@/components/appointments/appointment-form";
 
 export function NewAppointmentDialog({ patientId }: { patientId?: string }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (!patientId && searchParams.get("new") === "1") {
+      setOpen(true);
+      router.replace("/appointments");
+    }
+  }, [patientId, searchParams, router]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

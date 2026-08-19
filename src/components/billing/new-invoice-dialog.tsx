@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,14 @@ import { InvoiceForm } from "@/components/billing/invoice-form";
 export function NewInvoiceDialog() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setOpen(true);
+      router.replace("/billing");
+    }
+  }, [searchParams, router]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
