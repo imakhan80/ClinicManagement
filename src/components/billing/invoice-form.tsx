@@ -21,6 +21,7 @@ import { formatCurrency } from "@/lib/format";
 interface FormValues {
   patient_id: string;
   tax: number;
+  discount: number;
   due_date: string;
   items: { description: string; quantity: number; unit_price: number }[];
 }
@@ -41,6 +42,7 @@ export function InvoiceForm({
       defaultValues: {
         patient_id: patientId ?? "",
         tax: 0,
+        discount: 0,
         items: [{ description: "", quantity: 1, unit_price: 0 }],
       },
     });
@@ -58,6 +60,7 @@ export function InvoiceForm({
   const items = watch("items");
   const subtotal = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.unit_price) || 0), 0);
   const tax = Number(watch("tax")) || 0;
+  const discount = Number(watch("discount")) || 0;
 
   async function onSubmit(values: FormValues) {
     setServerError(null);
@@ -138,14 +141,20 @@ export function InvoiceForm({
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="space-y-1.5">
           <Label>Tax</Label>
           <Input type="number" step="0.01" {...register("tax", { valueAsNumber: true })} />
         </div>
+        <div className="space-y-1.5">
+          <Label>Discount</Label>
+          <Input type="number" step="0.01" {...register("discount", { valueAsNumber: true })} />
+        </div>
         <div className="flex flex-col justify-end text-right">
           <p className="text-xs text-muted-foreground">Total</p>
-          <p className="text-lg font-semibold tabular-nums">{formatCurrency(subtotal + tax)}</p>
+          <p className="text-lg font-semibold tabular-nums">
+            {formatCurrency(Math.max(0, subtotal + tax - discount))}
+          </p>
         </div>
       </div>
 

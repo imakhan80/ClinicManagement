@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Loader2, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,25 +22,26 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { recordPayment } from "@/actions/billing";
+import { recordRefund } from "@/actions/billing";
 import type { PaymentMethod } from "@/lib/types/database";
 
 interface FormValues {
   amount: number;
   method: PaymentMethod;
+  note: string;
 }
 
-export function RecordPaymentDialog({ invoiceId, balance }: { invoiceId: string; balance: number }) {
+export function RefundDialog({ invoiceId, paidAmount }: { invoiceId: string; paidAmount: number }) {
   const [open, setOpen] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const router = useRouter();
   const { register, handleSubmit, setValue, watch, formState: { isSubmitting } } = useForm<FormValues>({
-    defaultValues: { amount: balance, method: "cash" },
+    defaultValues: { amount: paidAmount, method: "cash", note: "" },
   });
 
   async function onSubmit(values: FormValues) {
     setServerError(null);
-    const result = await recordPayment(invoiceId, values);
+    const result = await recordRefund(invoiceId, values);
     if (result.error) {
       setServerError(result.error);
       return;
@@ -53,16 +54,16 @@ export function RecordPaymentDialog({ invoiceId, balance }: { invoiceId: string;
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button>
-            <CreditCard className="size-4" />
-            Record payment
+          <Button variant="outline" size="sm">
+            <Undo2 className="size-3.5" />
+            Refund
           </Button>
         }
       />
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Record payment</DialogTitle>
-          <DialogDescription>Balance due: ${balance.toFixed(2)}</DialogDescription>
+          <DialogTitle>Issue refund</DialogTitle>
+          <DialogDescription>Paid so far: ${paidAmount.toFixed(2)}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
@@ -84,12 +85,16 @@ export function RecordPaymentDialog({ invoiceId, balance }: { invoiceId: string;
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-1.5">
+            <Label>Reason (optional)</Label>
+            <Input placeholder="Overcharged, service not rendered…" {...register("note")} />
+          </div>
           {serverError && (
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{serverError}</p>
           )}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" variant="outline" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-            Record payment
+            Issue refund
           </Button>
         </form>
       </DialogContent>

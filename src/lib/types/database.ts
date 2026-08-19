@@ -195,6 +195,7 @@ export interface Database {
           status: InvoiceStatus;
           subtotal: number;
           tax: number;
+          discount: number;
           total: number;
           due_date: string | null;
           created_by: string | null;
@@ -209,6 +210,7 @@ export interface Database {
           status?: InvoiceStatus;
           subtotal?: number;
           tax?: number;
+          discount?: number;
           total?: number;
           due_date?: string | null;
           created_by?: string | null;
@@ -260,6 +262,8 @@ export interface Database {
           method: PaymentMethod;
           paid_at: string;
           recorded_by: string | null;
+          is_refund: boolean;
+          note: string | null;
         };
         Insert: {
           id?: string;
@@ -268,6 +272,8 @@ export interface Database {
           method: PaymentMethod;
           paid_at?: string;
           recorded_by?: string | null;
+          is_refund?: boolean;
+          note?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["payments"]["Insert"]>;
         Relationships: [
