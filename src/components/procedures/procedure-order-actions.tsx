@@ -24,7 +24,11 @@ export function ProcedureOrderActions({ orderId }: { orderId: string }) {
 
   function cancel() {
     startTransition(async () => {
-      await cancelProcedureOrder(orderId);
+      const result = await cancelProcedureOrder(orderId);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
       router.refresh();
     });
   }
