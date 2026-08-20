@@ -251,13 +251,17 @@ export function AppointmentCalendar() {
         <div className="overflow-x-auto rounded-xl border border-border">
           <div
             className="grid"
-            style={{ gridTemplateColumns: `56px repeat(${days.length}, minmax(140px, 1fr))` }}
+            style={{
+              gridTemplateColumns: `56px repeat(${days.length}, minmax(140px, 1fr))`,
+              gridTemplateRows: `auto repeat(${hours.length}, ${HOUR_HEIGHT}px)`,
+            }}
           >
-            <div className="border-b border-border" />
-            {days.map((day) => (
+            <div className="border-b border-border" style={{ gridColumn: 1, gridRow: 1 }} />
+            {days.map((day, dayIdx) => (
               <div
                 key={day.toISOString()}
                 className="border-b border-l border-border py-2 text-center text-xs font-medium"
+                style={{ gridColumn: dayIdx + 2, gridRow: 1 }}
               >
                 <span className={isToday(day) ? "text-primary" : "text-muted-foreground"}>
                   {format(day, "EEE d")}
@@ -265,8 +269,12 @@ export function AppointmentCalendar() {
               </div>
             ))}
 
-            {hours.map((hour) => (
-              <div key={`label-${hour}`} className="border-b border-border px-1 pt-0 text-right text-[10px] text-muted-foreground">
+            {hours.map((hour, hourIdx) => (
+              <div
+                key={`label-${hour}`}
+                className="border-b border-border px-1 pt-0 text-right text-[10px] text-muted-foreground"
+                style={{ gridColumn: 1, gridRow: hourIdx + 2 }}
+              >
                 <span className="-translate-y-1/2 block">{format(new Date(2000, 0, 1, hour), "h a")}</span>
               </div>
             ))}
@@ -274,7 +282,7 @@ export function AppointmentCalendar() {
               <div
                 key={`col-${dayIdx}`}
                 className="relative border-l border-border"
-                style={{ height: hours.length * HOUR_HEIGHT }}
+                style={{ gridColumn: dayIdx + 2, gridRow: `2 / span ${hours.length}` }}
               >
                 {hours.map((hour) => (
                   <div
