@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowRight, Loader2, Radio, ListOrdered } from "lucide-react";
+import { ArrowRight, ClipboardList, Loader2, Radio, ListOrdered } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -109,27 +110,45 @@ export function QueueBoard({ initial, role }: { initial: QueueRow[]; role: Role 
                         <StatusBadge label="Urgent" tone="destructive" />
                       )}
                     </div>
-                    {(col.key === "waiting" || col.key === "triaged" || col.key === "ready") &&
-                      (role === "doctor" || role === "admin") && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-1 w-full"
-                          disabled={isPending}
-                          onClick={() =>
-                            startTransition(() => {
-                              callToConsult(entry.id, entry.appointment_id);
-                            })
-                          }
-                        >
-                          {isPending ? (
-                            <Loader2 className="size-3.5 animate-spin" />
-                          ) : (
-                            <ArrowRight className="size-3.5" />
-                          )}
-                          Call in
-                        </Button>
-                      )}
+                    {(col.key === "waiting" || col.key === "triaged" || col.key === "ready") && (
+                      <div className="mt-1 flex gap-1.5">
+                        {(role === "doctor" || role === "nurse" || role === "admin") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            nativeButton={false}
+                            render={
+                              <Link href={`/consultation/${entry.appointment_id}`}>
+                                <ClipboardList className="size-3.5" />
+                                Open chart
+                              </Link>
+                            }
+                          />
+                        )}
+                        {(role === "doctor" || role === "admin") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            disabled={isPending}
+                            onClick={() =>
+                              startTransition(async () => {
+                                const result = await callToConsult(entry.id, entry.appointment_id);
+                                if (result.error) toast.error(result.error);
+                              })
+                            }
+                          >
+                            {isPending ? (
+                              <Loader2 className="size-3.5 animate-spin" />
+                            ) : (
+                              <ArrowRight className="size-3.5" />
+                            )}
+                            Call in
+                          </Button>
+                        )}
+                      </div>
+                    )}
                     {col.key === "in_consult" && (
                       <Button
                         size="sm"
