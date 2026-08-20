@@ -82,7 +82,7 @@ export function InvoiceForm({
         {!patientId && (
           <div className="space-y-1.5">
             <Label>Patient</Label>
-            <Select value={watch("patient_id")} onValueChange={(v) => setValue("patient_id", v ?? "")}>
+            <Select value={watch("patient_id") ?? ""} onValueChange={(v) => setValue("patient_id", v ?? "")}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a patient" />
               </SelectTrigger>
