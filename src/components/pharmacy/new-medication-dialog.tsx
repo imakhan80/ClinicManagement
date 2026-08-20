@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,13 +32,18 @@ export function NewMedicationDialog() {
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<FormValues>();
 
   async function onSubmit(values: FormValues) {
-    await createMedication({
+    const result = await createMedication({
       name: values.name,
       form: values.form,
       strength: values.strength,
       unitPrice: Number(values.unitPrice) || 0,
       stockQuantity: Number(values.stockQuantity) || 0,
     });
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Medication added");
     reset();
     setOpen(false);
     router.refresh();
