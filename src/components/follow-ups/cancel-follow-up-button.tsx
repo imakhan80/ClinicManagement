@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cancelFollowUp } from "@/actions/follow-ups";
 
@@ -17,7 +18,11 @@ export function CancelFollowUpButton({ followUpId }: { followUpId: string }) {
       disabled={isPending}
       onClick={() =>
         startTransition(async () => {
-          await cancelFollowUp(followUpId);
+          const result = await cancelFollowUp(followUpId);
+          if (result.error) {
+            toast.error(result.error);
+            return;
+          }
           router.refresh();
         })
       }

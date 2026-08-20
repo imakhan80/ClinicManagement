@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { CalendarPlus, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,12 +35,17 @@ export function ScheduleFollowUpDialog({
   const { register, handleSubmit, formState: { isSubmitting } } = useForm<FormValues>();
 
   async function onSubmit(values: FormValues) {
-    await scheduleFollowUp({
+    const result = await scheduleFollowUp({
       followUpId,
       patientId,
       doctorId: doctorId ?? undefined,
       scheduledAt: values.scheduledAt,
     });
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Follow-up scheduled");
     setOpen(false);
     router.refresh();
   }

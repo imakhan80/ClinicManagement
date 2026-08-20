@@ -29,7 +29,12 @@ export async function scheduleFollowUp(input: {
     })
     .select("id")
     .single();
-  if (apptError) return { error: apptError.message };
+  if (apptError) {
+    if (apptError.code === "23P01") {
+      return { error: "This doctor already has an appointment that overlaps this time slot." };
+    }
+    return { error: apptError.message };
+  }
 
   const { error } = await supabase
     .from("follow_ups")
