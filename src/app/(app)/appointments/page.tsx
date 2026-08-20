@@ -21,7 +21,7 @@ export default async function AppointmentsPage() {
   const { data: appointments } = await supabase
     .from("appointments")
     .select(
-      "id, scheduled_at, status, reason, patient_id, patients(full_name), doctor:profiles!doctor_id(full_name)"
+      "id, scheduled_at, duration_minutes, status, reason, notes, patient_id, doctor_id, patients(full_name), doctor:profiles!doctor_id(full_name)"
     )
     .gte("scheduled_at", startOfToday.toISOString())
     .not("status", "in", "(completed,cancelled,no_show)")
@@ -81,6 +81,11 @@ export default async function AppointmentsPage() {
                           appointmentId={appt.id}
                           patientId={appt.patient_id}
                           status={appt.status}
+                          scheduledAt={appt.scheduled_at}
+                          durationMinutes={appt.duration_minutes}
+                          doctorId={appt.doctor_id}
+                          reason={appt.reason}
+                          notes={appt.notes}
                         />
                       </div>
                     </li>

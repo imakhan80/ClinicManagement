@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { appointmentSchema } from "@/lib/validations/appointment";
+import { appointmentSchema, rescheduleSchema } from "@/lib/validations/appointment";
 import { getCurrentUser } from "@/lib/auth/get-profile";
 import type { AppointmentStatus } from "@/lib/types/database";
 
@@ -44,6 +44,34 @@ export async function createAppointment(input: unknown): Promise<ActionResult> {
   revalidatePath("/appointments");
   revalidatePath("/dashboard");
   return { id: data.id };
+}
+
+export async function rescheduleAppointment(id: string, input: unknown): Promise<ActionResult> {
+  const parsed = rescheduleSchema.safeParse(input);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("appointments")
+    .update({
+      doctor_id: parsed.data.doctor_id || null,
+      scheduled_at: new Date(parsed.data.scheduled_at).toISOString(),
+      duration_minutes: parsed.data.duration_minutes,
+      reason: parsed.data.reason || null,
+      notes: parsed.data.notes || null,
+    })
+    .eq("id", id);
+
+  if (error) {
+    if (error.code === "23P01") {
+      return { error: "This doctor already has an appointment that overlaps this time slot." };
+    }
+    return { error: error.message };
+  }
+
+  revalidatePath("/appointments");
+  revalidatePath("/dashboard");
+  return { id };
 }
 
 export async function updateAppointmentStatus(
