@@ -81,7 +81,7 @@ export function AddPolicyDialog({ patientId }: { patientId: string }) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div className="space-y-1.5">
             <Label>Provider</Label>
-            <Select value={watch("provider_id")} onValueChange={(v) => setValue("provider_id", v ?? "")}>
+            <Select value={watch("provider_id") ?? ""} onValueChange={(v) => setValue("provider_id", v ?? "")}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a provider" />
               </SelectTrigger>
