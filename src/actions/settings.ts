@@ -47,6 +47,9 @@ export async function updateStaffMember(input: unknown): Promise<ActionResult> {
   const parsed = staffMemberSchema.safeParse(input);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") return { error: "Only admins can update staff members." };
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
