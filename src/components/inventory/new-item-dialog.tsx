@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +33,12 @@ export function NewItemDialog() {
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<FormValues>();
 
   async function onSubmit(values: FormValues) {
-    await createInventoryItem(values);
+    const result = await createInventoryItem(values);
+    if (result?.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Item added");
     reset();
     setOpen(false);
     router.refresh();
