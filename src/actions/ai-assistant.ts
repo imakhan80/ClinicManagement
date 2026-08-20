@@ -128,12 +128,23 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
 
     case "search_patients": {
       const query = String(args.query ?? "");
-      const { data } = await supabase
-        .from("patients")
-        .select("id, full_name, mrn, phone, date_of_birth")
-        .or(`full_name.ilike.%${query}%,mrn.ilike.%${query}%`)
-        .limit(10);
-      return { results: data ?? [] };
+      const [{ data: byName }, { data: byMrn }] = await Promise.all([
+        supabase
+          .from("patients")
+          .select("id, full_name, mrn, phone, date_of_birth")
+          .ilike("full_name", `%${query}%`)
+          .limit(10),
+        supabase
+          .from("patients")
+          .select("id, full_name, mrn, phone, date_of_birth")
+          .ilike("mrn", `%${query}%`)
+          .limit(10),
+      ]);
+      const seen = new Set<string>();
+      const results = [...(byName ?? []), ...(byMrn ?? [])].filter((p) =>
+        seen.has(p.id) ? false : (seen.add(p.id), true)
+      );
+      return { results };
     }
 
     case "get_appointments": {
