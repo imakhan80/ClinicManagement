@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { CheckCircle2, Loader2, PlayCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/status-badge";
@@ -57,11 +58,15 @@ export function InvestigationResultRow({
                 disabled={isPending}
                 onClick={() =>
                   startTransition(async () => {
-                    await updateInvestigationResult({
+                    const result = await updateInvestigationResult({
                       id: investigation.id,
                       appointmentId: investigation.appointment_id ?? "",
                       status: "in_progress",
                     });
+                    if (result.error) {
+                      toast.error(result.error);
+                      return;
+                    }
                     setStatus("in_progress");
                   })
                 }
@@ -75,12 +80,17 @@ export function InvestigationResultRow({
               disabled={isPending}
               onClick={() =>
                 startTransition(async () => {
-                  await updateInvestigationResult({
+                  const result = await updateInvestigationResult({
                     id: investigation.id,
                     appointmentId: investigation.appointment_id ?? "",
                     status: "completed",
                     resultText,
                   });
+                  if (result.error) {
+                    toast.error(result.error);
+                    return;
+                  }
+                  toast.success("Result saved");
                   setStatus("completed");
                 })
               }
