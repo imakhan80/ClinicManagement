@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   Activity,
   Menu,
@@ -45,6 +46,7 @@ export function AppShell({
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing collapsed state from a persisted preference, runs once on mount
     setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
   }, []);
 
@@ -61,7 +63,7 @@ export function AppShell({
       {/* Desktop / tablet sidebar */}
       <aside
         className={cn(
-          "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex md:w-[72px]",
+          "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out md:flex md:w-[72px]",
           !collapsed && "lg:w-64"
         )}
       >
@@ -130,7 +132,11 @@ export function AppShell({
                 title={item.label}
               >
                 {active && (
-                  <span className="absolute top-1/2 left-0 h-4 w-[3px] -translate-y-1/2 rounded-full bg-sidebar-primary" />
+                  <motion.span
+                    layoutId="active-nav-indicator"
+                    className="absolute top-1/2 left-0 h-4 w-[3px] -translate-y-1/2 rounded-full bg-sidebar-primary"
+                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                  />
                 )}
                 <item.icon className="size-[18px] shrink-0" strokeWidth={active ? 2.25 : 2} />
                 <span className={cn("hidden truncate", !collapsed && "lg:inline")}>
@@ -284,7 +290,15 @@ export function AppShell({
         </header>
 
         <main className="flex-1 px-4 pt-6 pb-24 sm:px-6 md:pb-8 lg:px-8">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="mx-auto w-full max-w-6xl"
+          >
+            {children}
+          </motion.div>
         </main>
       </div>
 

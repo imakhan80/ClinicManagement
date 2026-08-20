@@ -1,10 +1,16 @@
+"use client"
+
+import { motion, type HTMLMotionProps } from "framer-motion"
+
 import { cn } from "@/lib/utils"
 
-function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+function Skeleton({ className, ...props }: HTMLMotionProps<"div">) {
   return (
-    <div
+    <motion.div
       data-slot="skeleton"
-      className={cn("animate-pulse rounded-md bg-muted", className)}
+      animate={{ opacity: [0.5, 1, 0.5] }}
+      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+      className={cn("rounded-md bg-muted", className)}
       {...props}
     />
   )
