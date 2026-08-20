@@ -135,7 +135,7 @@ export function LogCommunicationDialog({ patientId }: { patientId?: string }) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Channel</Label>
-              <Select value={watch("channel")} onValueChange={(v) => setValue("channel", (v ?? "call") as FormValues["channel"])}>
+              <Select value={watch("channel") ?? "call"} onValueChange={(v) => setValue("channel", (v ?? "call") as FormValues["channel"])}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -149,7 +149,7 @@ export function LogCommunicationDialog({ patientId }: { patientId?: string }) {
             </div>
             <div className="space-y-1.5">
               <Label>Direction</Label>
-              <Select value={watch("direction")} onValueChange={(v) => setValue("direction", (v ?? "outbound") as FormValues["direction"])}>
+              <Select value={watch("direction") ?? "outbound"} onValueChange={(v) => setValue("direction", (v ?? "outbound") as FormValues["direction"])}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>

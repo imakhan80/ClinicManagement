@@ -75,7 +75,7 @@ export function RefundDialog({ invoiceId, paidAmount }: { invoiceId: string; pai
           </div>
           <div className="space-y-1.5">
             <Label>Method</Label>
-            <Select value={watch("method")} onValueChange={(v) => setValue("method", v as PaymentMethod)}>
+            <Select value={watch("method") ?? "cash"} onValueChange={(v) => setValue("method", v as PaymentMethod)}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>

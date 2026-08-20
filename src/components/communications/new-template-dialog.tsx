@@ -73,7 +73,7 @@ export function NewTemplateDialog() {
           </div>
           <div className="space-y-1.5">
             <Label>Channel</Label>
-            <Select value={watch("channel")} onValueChange={(v) => setValue("channel", (v ?? "sms") as FormValues["channel"])}>
+            <Select value={watch("channel") ?? "sms"} onValueChange={(v) => setValue("channel", (v ?? "sms") as FormValues["channel"])}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
