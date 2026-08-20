@@ -103,7 +103,7 @@ export function PrescriptionsPanel({
               <div className="flex gap-1">
                 <Input type="number" min={1} placeholder="Qty" {...register(`items.${index}.quantity`)} />
                 {fields.length > 1 && (
-                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                  <Button type="button" variant="ghost" size="icon" aria-label="Remove medication" onClick={() => remove(index)}>
                     <Trash2 className="size-3.5" />
                   </Button>
                 )}

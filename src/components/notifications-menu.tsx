@@ -63,7 +63,10 @@ export function NotificationsMenu({ userId }: { userId: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <button className="relative flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground">
+          <button
+            aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+            className="relative flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          >
             <Bell className="size-[18px]" />
             {unreadCount > 0 && (
               <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[9px] font-semibold text-white">

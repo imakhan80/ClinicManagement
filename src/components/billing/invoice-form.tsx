@@ -127,7 +127,7 @@ export function InvoiceForm({
               {...register(`items.${index}.unit_price`, { required: true, valueAsNumber: true })}
             />
             {fields.length > 1 && (
-              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+              <Button type="button" variant="ghost" size="icon" aria-label="Remove line item" onClick={() => remove(index)}>
                 <Trash2 className="size-3.5" />
               </Button>
             )}

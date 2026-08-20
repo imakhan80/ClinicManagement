@@ -158,7 +158,7 @@ export function NewProcedureDialog() {
                     updateConsumableRow(row.key, { quantity_per_procedure: Math.max(1, Number(e.target.value) || 1) })
                   }
                 />
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeConsumableRow(row.key)}>
+                <Button type="button" variant="ghost" size="icon" aria-label="Remove consumable" onClick={() => removeConsumableRow(row.key)}>
                   <Trash2 className="size-3.5" />
                 </Button>
               </div>

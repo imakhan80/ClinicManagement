@@ -190,7 +190,10 @@ export function AppShell({
               <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                 <SheetTrigger
                   render={
-                    <button className="-ml-2 flex size-9 items-center justify-center rounded-lg hover:bg-accent">
+                    <button
+                      aria-label="Open navigation menu"
+                      className="-ml-2 flex size-9 items-center justify-center rounded-lg hover:bg-accent"
+                    >
                       <Menu className="size-5" />
                     </button>
                   }

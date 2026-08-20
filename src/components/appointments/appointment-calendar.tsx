@@ -85,6 +85,7 @@ export function AppointmentCalendar() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- flips the loading indicator on before an async fetch, not derived state
     setLoading(true);
     const from = new Date(gridStart);
     from.setHours(0, 0, 0, 0);
@@ -145,13 +146,13 @@ export function AppointmentCalendar() {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1.5">
-          <Button variant="outline" size="icon-sm" onClick={() => navigate(-1)}>
+          <Button variant="outline" size="icon-sm" aria-label="Previous period" onClick={() => navigate(-1)}>
             <ChevronLeft className="size-4" />
           </Button>
           <Button variant="outline" size="sm" onClick={() => setAnchor(new Date())}>
             Today
           </Button>
-          <Button variant="outline" size="icon-sm" onClick={() => navigate(1)}>
+          <Button variant="outline" size="icon-sm" aria-label="Next period" onClick={() => navigate(1)}>
             <ChevronRight className="size-4" />
           </Button>
           <span className="ml-2 text-sm font-semibold">{title}</span>

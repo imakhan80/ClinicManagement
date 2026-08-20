@@ -108,7 +108,7 @@ export function ChatPanel() {
           placeholder="Ask a question about the clinic…"
           className="h-10 flex-1 rounded-xl border border-border bg-background px-3.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
-        <Button type="submit" size="icon" disabled={isPending || !input.trim()}>
+        <Button type="submit" size="icon" aria-label="Send message" disabled={isPending || !input.trim()}>
           <Send className="size-4" />
         </Button>
       </form>

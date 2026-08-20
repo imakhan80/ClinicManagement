@@ -19,7 +19,7 @@ export function QuickAddMenu({ role }: { role: Role }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button size="icon-sm" className="rounded-lg">
+          <Button size="icon-sm" className="rounded-lg" aria-label="Quick add">
             <Plus className="size-4" />
           </Button>
         }
